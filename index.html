@@ -1,0 +1,318 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedLogic | Medical Expert System</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="app">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="logo">✚</div>
+            <div>
+                <h2>MedLogic</h2>
+                <small>AI EXPERT SYSTEM</small>
+            </div>
+        </div>
+
+        <p class="nav-title">MAIN MENU</p>
+        <div class="nav active">▦ &nbsp; Dashboard</div>
+        <div class="nav">⌘ &nbsp; Inference Engine</div>
+        <div class="nav">☷ &nbsp; Knowledge Base</div>
+
+        <div class="sidebar-bottom">
+            <span class="online-dot"></span>
+            <div>
+                <b>System Online</b>
+                <small>Local demonstration</small>
+            </div>
+        </div>
+    </aside>
+
+    <main class="content">
+        <header class="topbar">
+            <div>
+                <p class="breadcrumb">Workspace / Dashboard</p>
+                <h1>Medical Diagnosis System</h1>
+                <p class="subtitle">
+                    Intelligent rule-based reasoning using AI inference.
+                </p>
+            </div>
+            <span class="status">● SYSTEM READY</span>
+        </header>
+
+        <div class="warning">
+            <span class="warning-icon">!</span>
+            <div>
+                <b>Educational project only</b>
+                <p>
+                    This prototype demonstrates AI reasoning. Its sample
+                    rules are not medically validated and must not be used
+                    to diagnose or treat real medical conditions.
+                </p>
+            </div>
+        </div>
+
+        <section class="stats">
+            <div class="stat-card">
+                <div class="stat-icon purple">⌘</div>
+                <div>
+                    <p>Inference Methods</p>
+                    <h2>02</h2>
+                    <small>Forward & Backward</small>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon blue">⚙</div>
+                <div>
+                    <p>Knowledge Base Rules</p>
+                    <h2>{{ rules|length }}</h2>
+                    <small>Programmable rules</small>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon green">✓</div>
+                <div>
+                    <p>Available Symptoms</p>
+                    <h2>{{ symptoms|length }}</h2>
+                    <small>Input facts</small>
+                </div>
+            </div>
+        </section>
+
+        <form method="POST">
+            <section class="workspace">
+
+                <div class="panel">
+                    <div class="panel-title">
+                        <div>
+                            <span class="step">STEP 01</span>
+                            <h2>Select Symptoms</h2>
+                            <p>Choose symptoms to create the known facts.</p>
+                        </div>
+                        <span class="panel-symbol">＋</span>
+                    </div>
+
+                    <div class="symptom-grid">
+                        {% for key, label in symptoms.items() %}
+                        <label class="symptom">
+                            <input type="checkbox"
+                                   name="symptoms"
+                                   value="{{ key }}"
+                                   {% if key in selected %}checked{% endif %}>
+                            <span class="custom-check">✓</span>
+                            <span>{{ label }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+
+                    <button type="button" class="clear-button"
+                        onclick="document.querySelectorAll(
+                        'input[name=symptoms]').forEach(
+                        item => item.checked = false)">
+                        Clear all symptoms
+                    </button>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">
+                        <div>
+                            <span class="step">STEP 02</span>
+                            <h2>Set Reasoning Goal</h2>
+                            <p>Choose a rule for backward chaining.</p>
+                        </div>
+                        <span class="panel-symbol">◎</span>
+                    </div>
+
+                    <label class="field-label" for="goal">
+                        TARGET CONCLUSION
+                    </label>
+
+                    <select name="goal" id="goal">
+                        {% for name in rules.keys() %}
+                        <option value="{{ name }}"
+                            {% if goal == name %}selected{% endif %}>
+                            {{ name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    <div class="info-box">
+                        <b>How does it work?</b>
+                        <p>
+                            The system checks the selected target rule
+                            against the symptoms you entered.
+                        </p>
+                    </div>
+
+                    <button type="submit" class="run-button">
+                        Run Inference Engine <span>→</span>
+                    </button>
+
+                    <p class="privacy">● Processing runs on your computer</p>
+                </div>
+
+            </section>
+        </form>
+
+        {% if submitted %}
+        <section class="results">
+            <div class="section-heading">
+                <span class="step">ANALYSIS REPORT</span>
+                <h2>Inference Results</h2>
+                <p>Review how the rule engine evaluated your input facts.</p>
+            </div>
+
+            <div class="result-grid">
+                <div class="panel">
+                    <div class="result-title">
+                        <span class="result-icon">→</span>
+                        <div>
+                            <h3>Forward Chaining</h3>
+                            <small>Fact-driven reasoning</small>
+                        </div>
+                    </div>
+
+                    {% if forward_results %}
+                        <div class="success-box">
+                            ✓ {{ forward_results|length }}
+                            rule(s) matched
+                        </div>
+
+                        {% for result in forward_results %}
+                        <div class="result-item">✓ &nbsp; {{ result }}</div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-box">
+                            <h3>No complete rule matched</h3>
+                            <p>
+                                No programmed rule had all its required
+                                symptoms selected.
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="panel">
+                    <div class="result-title">
+                        <span class="result-icon second">◎</span>
+                        <div>
+                            <h3>Backward Chaining</h3>
+                            <small>Goal-driven reasoning</small>
+                        </div>
+                    </div>
+
+                    {% if backward_result %}
+                        <div class="{% if backward_result.success %}
+                            success-box{% else %}neutral-box{% endif %}">
+                            {{ '✓ Goal rule satisfied' if
+                            backward_result.success else
+                            '○ Goal rule not satisfied' }}
+                        </div>
+
+                        <p class="detail-label">TARGET</p>
+                        <p>{{ backward_result.goal }}</p>
+
+                        <p class="detail-label">SYMPTOMS FOUND</p>
+                        <p>
+                            {{ backward_result.present|join(', ')
+                            if backward_result.present else 'None' }}
+                        </p>
+
+                        <p class="detail-label">SYMPTOMS MISSING</p>
+                        <p>
+                            {{ backward_result.missing|join(', ')
+                            if backward_result.missing else 'None' }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="panel trace-panel">
+                <div class="panel-title">
+                    <div>
+                        <span class="step">EXPLAINABLE AI</span>
+                        <h2>Rule Evaluation Trace</h2>
+                        <p>See the conditions checked by each rule.</p>
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rule</th>
+                                <th>Status</th>
+                                <th>Symptoms Found</th>
+                                <th>Symptoms Missing</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in trace %}
+                            <tr>
+                                <td><b>{{ item.rule }}</b></td>
+                                <td>
+                                    <span class="{% if item.status == 'Matched' %}
+                                        tag-good{% else %}tag-neutral{% endif %}">
+                                        {{ item.status }}
+                                    </span>
+                                </td>
+                                <td>{{ item.present|join(', ')
+                                    if item.present else '—' }}</td>
+                                <td>{{ item.missing|join(', ')
+                                    if item.missing else '—' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="methods">
+            <div class="section-heading">
+                <span class="step">LEARN THE LOGIC</span>
+                <h2>Two AI Reasoning Methods</h2>
+            </div>
+
+            <div class="result-grid">
+                <div class="method-card">
+                    <h3>→ Forward Chaining</h3>
+                    <div class="flow">
+                        <span>Symptoms</span> → <span>Rules</span> → <span>Results</span>
+                    </div>
+                    <p>
+                        Starts with known facts and checks rules to find
+                        conclusions whose requirements are met.
+                    </p>
+                </div>
+
+                <div class="method-card">
+                    <h3>◎ Backward Chaining</h3>
+                    <div class="flow">
+                        <span>Goal</span> → <span>Check facts</span> → <span>Verify</span>
+                    </div>
+                    <p>
+                        Starts with a target conclusion and checks whether
+                        its required facts are present.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <b>MedLogic</b> · AI Mini Project
+            <span>Python + Flask</span>
+        </footer>
+    </main>
+</div>
+</body>
+</html>
